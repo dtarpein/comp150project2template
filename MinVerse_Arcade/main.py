@@ -11,7 +11,7 @@ def index():
 @app.route('/increment', methods=['POST'])
 def increment():
     global count
-    count += 1
+    count += 2
     return jsonify({'count': count})
 
 
