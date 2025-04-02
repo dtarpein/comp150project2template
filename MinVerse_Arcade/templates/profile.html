@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <h1>{{ user.username }}'s Profile</h1>
+  <img src="{{ url_for('static', filename='media/images/' + user.avatar) }}" alt="Avatar" class="avatar">
+  
+  <div class="nav-links">
+    <a href="{{ url_for('index') }}">Back to Game Hub</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+  </div>
+  
+  <h2>Your High Scores</h2>
+  {% if scores %}
+    <table class="score-table">
+      <thead>
+        <tr>
+          <th>Game</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for score in scores %}
+          <tr>
+            <td>{{ score.game }}</td>
+            <td>{{ score.score }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No scores yet. Start playing to see your scores here!</p>
+  {% endif %}
+</body>
+</html>

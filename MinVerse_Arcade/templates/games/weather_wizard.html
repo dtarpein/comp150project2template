@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Weather Wizard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <h1>☀️ Weather Wizard</h1>
+  <input id="city-input" placeholder="Enter city name">
+  <button id="get-weather">Get Weather</button>
+  <p id="weather-result"></p>
+  <script src="{{ url_for('static', filename='js/weather_wizard.js') }}"></script>
+</body>
+</html>

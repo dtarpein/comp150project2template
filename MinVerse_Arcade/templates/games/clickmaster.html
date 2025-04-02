@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ClickMaster</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <h1>🔥 ClickMaster</h1>
+  <p>Click as fast as you can!</p>
+  <button id="click-btn">Click Me!</button>
+  <p>Clicks: <span id="click-count">0</span></p>
+  <script src="{{ url_for('static', filename='js/clickmaster.js') }}"></script>
+</body>
+</html>

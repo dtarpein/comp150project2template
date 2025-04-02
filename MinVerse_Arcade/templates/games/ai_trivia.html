@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Trivia</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <h1>🧠 AI Trivia</h1>
+  <button id="new-question">Get Trivia Question</button>
+  <p id="question"></p>
+  <button id="show-answer">Show Answer</button>
+  <p id="answer"></p>
+  <script src="{{ url_for('static', filename='js/ai_trivia.js') }}"></script>
+</body>
+</html>

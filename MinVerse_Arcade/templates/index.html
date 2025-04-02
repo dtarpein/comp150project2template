@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MiniVerse Arcade</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <h1>Welcome to MiniVerse Arcade!</h1>
+  
+  {% if current_user.is_authenticated %}
+    <div class="navbar">
+      <a href="{{ url_for('profile') }}">Profile</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+    
+    <div class="games-grid">
+      <a href="{{ url_for('clickmaster') }}" class="game-card">
+        <h2>🔥 ClickMaster</h2>
+        <p>Test your clicking speed!</p>
+      </a>
+      
+      <a href="{{ url_for('fliptext') }}" class="game-card">
+        <h2>🔁 FlipText</h2>
+        <p>Flip the case of your text!</p>
+      </a>
+      
+      <a href="{{ url_for('emoji_memory') }}" class="game-card">
+        <h2>🧠 Emoji Memory</h2>
+        <p>Match the emoji pairs!</p>
+      </a>
+      
+      <a href="{{ url_for('space_dodger') }}" class="game-card">
+        <h2>🌌 Space Dodger</h2>
+        <p>Dodge the asteroids!</p>
+      </a>
+      
+      <a href="{{ url_for('weather_wizard') }}" class="game-card">
+        <h2>☀️ Weather Wizard</h2>
+        <p>Check the weather anywhere!</p>
+      </a>
+      
+      <a href="{{ url_for('ai_trivia') }}" class="game-card">
+        <h2>🧠 AI Trivia</h2>
+        <p>Test your knowledge!</p>
+      </a>
+    </div>
+  {% else %}
+    <div class="auth-buttons">
+      <a href="{{ url_for('login') }}" class="btn">Login</a>
+      <a href="{{ url_for('register') }}" class="btn">Register</a>
+    </div>
+    <p>Please login or register to access the arcade games!</p>
+  {% endif %}
+  
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

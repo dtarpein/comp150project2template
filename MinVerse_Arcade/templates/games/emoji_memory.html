@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Emoji Memory Game</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <h1>🧠 Emoji Memory Game</h1>
+  <div id="memory-game" class="memory-grid"></div>
+  <p>Matches: <span id="match-count">0</span></p>
+  <script src="{{ url_for('static', filename='js/emoji_memory.js') }}"></script>
+</body>
+</html>
