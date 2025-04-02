@@ -1,23 +1,23 @@
 [tool.poetry]
-name = "python-template"
+name = "miniverse-arcade"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "A Flask webapp with mini-games and APIs"
+authors = ["Dan Tarpein", "Brady"]
 
 [tool.poetry.dependencies]
 python = ">=3.10.0,<3.11"
 flask = "^3.0.0"
 gunicorn = "^21.2.0"
+requests = "^2.31.0"
+flask_sqlalchemy = "^3.1.1"
+flask_login = "^0.6.3"
+openai = "^1.3.5"
+python-dotenv = "^1.0.0"  # Added for .env file support
 
-[tool.pyright]
-# https://github.com/microsoft/pyright/blob/main/docs/configuration.md
-useLibraryCodeForTypes = true
-exclude = [".cache"]
-
-[tool.ruff]
-# https://beta.ruff.rs/docs/configuration/
-select = ['E', 'W', 'F', 'I', 'B', 'C4', 'ARG', 'SIM']
-ignore = ['W291', 'W292', 'W293']
+[tool.poetry.dev-dependencies]
+pytest = "^7.3.1"
+black = "^23.3.0"
+flake8 = "^6.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
