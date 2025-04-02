@@ -9,21 +9,22 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 def trivia():
     try:
         response = openai.chat.completions.create(
-    model="gpt-3.5-turbo",
-    messages=[
-        {"role": "system", 
-         "content": (
-             "Generate a random trivia question along with its answer. "
-             "Return a valid JSON object with two keys: 'question' and 'answer'. "
-             "Make the question interesting but not overly difficult. "
-             "Do not include any additional text."
-         )},
-    ],
-    temperature=0.7
-)
-content = response.choices[0].message.content.strip()
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system", 
+                    "content": (
+                        "Generate a random trivia question along with its answer. "
+                        "Return a valid JSON object with two keys: 'question' and 'answer'. "
+                        "Make the question interesting but not overly difficult. "
+                        "Do not include any additional text."
+                    )
+                },
+            ],
+            temperature=0.7
+        )
+        content = response.choices[0].message.content.strip()
 
-        
         # Try parsing the JSON response
         try:
             data = json.loads(content)
@@ -44,4 +45,3 @@ content = response.choices[0].message.content.strip()
     except Exception as e:
         print(f"API Error: {str(e)}")
         return {"question": "API Error", "answer": "Please try again later"}
-

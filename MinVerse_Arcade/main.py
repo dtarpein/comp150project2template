@@ -57,7 +57,7 @@ def register():
         username = request.form['username']
         if User.query.filter_by(username=username).first():
             return render_template('register.html', error="Username taken")
-        password = generate_password_hash(request.form['password'], method='sha256')
+        password = generate_password_hash(request.form['password'], method='pbkdf2:sha256')
         new_user = User(username=username, password=password)
         db.session.add(new_user)
         db.session.commit()
