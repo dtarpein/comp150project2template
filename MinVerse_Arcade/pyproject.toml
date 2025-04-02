@@ -2,10 +2,10 @@
 name = "miniverse-arcade"
 version = "0.1.0"
 description = "A Flask webapp with mini-games and APIs"
-authors = ["Dan Tarpein", "Brady"]
+authors = ["Dan Tarpein", "Brady Thompson"]
 
 [tool.poetry.dependencies]
-python = ">=3.10.0,<3.11"
+python = ">=3.10.0,<3.13"
 flask = "^3.0.0"
 gunicorn = "^21.2.0"
 requests = "^2.31.0"
