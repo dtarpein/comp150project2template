@@ -9,7 +9,7 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 def trivia():
     try:
         response = openai.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4",
             messages=[
                 {
                     "role": "system", 
