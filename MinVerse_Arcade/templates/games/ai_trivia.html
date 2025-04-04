@@ -5,6 +5,11 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+  <!-- Navigation bar added at the top -->
+  <nav class="navbar">
+    <a href="{{ url_for('index') }}" class="home-btn">Home</a>
+  </nav>
+
   <h1>🧠 AI Trivia</h1>
   <button id="new-question">Get Trivia Question</button>
   <p id="question"></p>
@@ -13,3 +18,4 @@
   <script src="{{ url_for('static', filename='js/ai_trivia.js') }}"></script>
 </body>
 </html>
+
