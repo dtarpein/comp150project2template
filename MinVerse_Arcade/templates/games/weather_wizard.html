@@ -5,6 +5,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+  <nav class="navbar">
+    <a href="{{ url_for('index') }}" class="home-btn">Home</a>
+  </nav>
+  
   <h1>☀️ Weather Wizard</h1>
   <input id="city-input" placeholder="Enter city name">
   <button id="get-weather">Get Weather</button>

@@ -5,6 +5,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+  <nav class="navbar">
+    <a href="{{ url_for('index') }}" class="home-btn">Home</a>
+  </nav>
+  
   <h1>🔁 FlipText</h1>
   <textarea id="flip-input" rows="5" cols="50" placeholder="Type something..."></textarea><br>
   <button id="flip-button">Flip Case</button>
