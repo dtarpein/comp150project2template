@@ -39,7 +39,9 @@ textarea, input {
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
   margin-top: 30px;
+  justify-content: center;  /* Centers the grid horizontally */
 }
+
 
 .game-card {
   background-color: #2d3436;
