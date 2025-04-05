@@ -1,33 +1,35 @@
-import openai
-import json
+from dotenv import load_dotenv
+load_dotenv()
+
 import os
+import json
 import time
 import random
-from dotenv import load_dotenv
+from openai import OpenAI
 
-load_dotenv()
-openai.api_key = os.getenv('OPENAI_API_KEY')
+# Now that load_dotenv() has been called, this will load your key correctly.
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 def trivia():
     # Generate a random value and current timestamp to ensure uniqueness
     random_value = random.random()
     current_timestamp = int(time.time())
-    
+
     system_message = (
         "Generate a unique, random trivia question along with its answer. "
         "Ensure the question is interesting, not overly difficult, and not a repeat. "
         "Return a valid JSON object with two keys: 'question' and 'answer'. "
         f"Random seed: {random_value}, Timestamp: {current_timestamp}."
     )
-    
+
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[{"role": "system", "content": system_message}],
             temperature=0.9  # Increase randomness for more varied output
         )
         content = response.choices[0].message.content.strip()
-        
+
         # Try parsing the JSON response
         try:
             data = json.loads(content)
@@ -42,10 +44,9 @@ def trivia():
                     return data
             except:
                 pass
-                
+
         # Fallback to a default response if parsing fails
         return {"question": "What is the capital of France?", "answer": "Paris"}
     except Exception as e:
         print(f"API Error: {str(e)}")
         return {"question": "API Error", "answer": "Please try again later"}
-
