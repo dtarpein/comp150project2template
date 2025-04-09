@@ -3,16 +3,135 @@
 <head>
   <title>ClickMaster</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    /* Additional styles for clue and coin displays */
+    .game-stats {
+      display: flex;
+      justify-content: space-between;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 10px;
+    }
+
+    .coin-display {
+      padding: 5px 15px;
+      background-color: #FFD700;
+      color: #333;
+      border-radius: 20px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .coin-icon {
+      margin-right: 5px;
+      font-size: 1.2em;
+    }
+    
+    .clue-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .clue-content {
+      background-color: #2d3436;
+      border: 2px solid #9932CC;
+      box-shadow: 0 0 20px #9932CC;
+      border-radius: 10px;
+      padding: 30px;
+      max-width: 500px;
+      width: 80%;
+      text-align: center;
+      position: relative;
+      animation: glow 2s infinite alternate;
+    }
+    
+    @keyframes glow {
+      from {
+        box-shadow: 0 0 10px #9932CC;
+      }
+      to {
+        box-shadow: 0 0 20px #9932CC, 0 0 30px #9932CC;
+      }
+    }
+    
+    .clue-title {
+      font-size: 1.5em;
+      color: #9932CC;
+      margin-bottom: 15px;
+    }
+    
+    .clue-text {
+      font-size: 1.1em;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    
+    .coin-reward {
+      background-color: #FFD700;
+      color: #333;
+      padding: 10px 15px;
+      border-radius: 20px;
+      display: inline-block;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    
+    .clue-btn {
+      background-color: #9932CC;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: all 0.3s;
+    }
+    
+    .clue-btn:hover {
+      background-color: #7B2CBF;
+      transform: scale(1.05);
+    }
+  </style>
 </head>
 <body>
   <nav class="navbar">
     <a href="{{ url_for('index') }}" class="home-btn">Home</a>
   </nav>
   
+  <div class="game-stats">
+    <div class="coin-display">
+      <span class="coin-icon">💰</span>
+      <span id="coin-count">0</span> coins
+    </div>
+  </div>
+  
   <h1>🔥 ClickMaster</h1>
   <p>Click as fast as you can!</p>
   <button id="click-btn">Click Me!</button>
   <p>Clicks: <span id="click-count">0</span></p>
+  
+  <!-- Clue Modal -->
+  <div id="clue-modal" class="clue-modal">
+    <div class="clue-content">
+      <div class="clue-title">🔍 You've Discovered a Clue!</div>
+      <div class="clue-text" id="clue-text"></div>
+      <div class="coin-reward">
+        <span class="coin-icon">💰</span> You earned <span id="earned-coins">0</span> coins!
+      </div>
+      <button class="clue-btn" id="clue-close-btn">Remember this clue</button>
+    </div>
+  </div>
+  
   <script src="{{ url_for('static', filename='js/clickmaster.js') }}"></script>
 </body>
 </html>

@@ -1,38 +1,127 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Profile</title>
+  <title>Your Profile</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .profile-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #2d3436;
+      border-radius: 10px;
+    }
+    
+    .stats-section {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+    
+    .stat-card {
+      background-color: #3d3d3d;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px;
+      min-width: 200px;
+    }
+    
+    .clues-section {
+      margin-top: 30px;
+      text-align: left;
+    }
+    
+    .clue-item {
+      background-color: #3d3d3d;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+      border-left: 4px solid #9932CC;
+    }
+    
+    .clue-game {
+      color: #9932CC;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .coin-display {
+      padding: 5px 15px;
+      background-color: #FFD700;
+      color: #333;
+      border-radius: 20px;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .coin-icon {
+      margin-right: 5px;
+      font-size: 1.2em;
+    }
+    
+    .section-title {
+      color: #00b894;
+      margin-top: 30px;
+      text-align: left;
+      border-bottom: 2px solid #00b894;
+      padding-bottom: 5px;
+    }
+  </style>
 </head>
 <body>
-  <h1>{{ user.username }}'s Profile</h1>
-  <img src="{{ url_for('static', filename='media/images/' + user.avatar) }}" alt="Avatar" class="avatar">
-  
-  <div class="nav-links">
-    <a href="{{ url_for('index') }}">Back to Game Hub</a>
+  <div class="navbar">
+    <a href="{{ url_for('index') }}">Home</a>
     <a href="{{ url_for('logout') }}">Logout</a>
   </div>
   
-  <h2>Your High Scores</h2>
-  {% if scores %}
+  <div class="profile-container">
+    <h1>Your Profile</h1>
+    
+    <div class="stats-section">
+      <div class="stat-card">
+        <h3>Total Games Played</h3>
+        <p>{{ games_played }}</p>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Your Coins</h3>
+        <div class="coin-display">
+          <span class="coin-icon">💰</span>
+          <span id="profile-coins">{{ coins }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <h2 class="section-title">Your Best Scores</h2>
     <table class="score-table">
-      <thead>
-        <tr>
-          <th>Game</th>
-          <th>Score</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for score in scores %}
-          <tr>
-            <td>{{ score.game }}</td>
-            <td>{{ score.score }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
+      <tr>
+        <th>Game</th>
+        <th>Score</th>
+      </tr>
+      {% for score in scores %}
+      <tr>
+        <td>{{ score.game }}</td>
+        <td>{{ score.score }}</td>
+      </tr>
+      {% endfor %}
     </table>
-  {% else %}
-    <p>No scores yet. Start playing to see your scores here!</p>
-  {% endif %}
+    
+    <h2 class="section-title">Discovered Clues</h2>
+    <div class="clues-section">
+      {% if clues %}
+        {% for clue in clues %}
+        <div class="clue-item">
+          <div class="clue-game">{{ clue.game_name | replace('_', ' ') | title }}</div>
+          <p>{{ clue.clue_text }}</p>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p>You haven't discovered any clues yet. Play games to find them!</p>
+      {% endif %}
+    </div>
+  </div>
 </body>
 </html>
