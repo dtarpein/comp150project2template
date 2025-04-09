@@ -3,55 +3,392 @@
 <head>
   <title>MiniVerse Arcade</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    /* Portal Animation Styles */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #portal-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000;
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #portal {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .portal-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 4px solid #9932CC;
+      box-shadow: 0 0 20px #9932CC, inset 0 0 20px #9932CC;
+      opacity: 0.8;
+    }
+
+    .portal-center {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #9932CC;
+      border-radius: 50%;
+      box-shadow: 0 0 40px 30px #9932CC;
+      animation: pulse 2s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 0.5;
+        box-shadow: 0 0 40px 30px #9932CC;
+      }
+      100% {
+        opacity: 1;
+        box-shadow: 0 0 80px 50px #9932CC;
+      }
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(180deg) scale(1.1); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
+    .particle {
+      position: absolute;
+      background-color: #9932CC;
+      border-radius: 50%;
+      opacity: 0.7;
+    }
+
+    #story-container {
+      position: absolute;
+      width: 80%;
+      max-width: 800px;
+      padding: 40px;
+      background-color: rgba(0, 0, 0, 0.8);
+      border: 2px solid #9932CC;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #9932CC;
+      text-align: center;
+      z-index: 20;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: opacity 1s, transform 1s;
+      color: white;
+    }
+
+    #story-container.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #story-title {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      color: #9932CC;
+      text-shadow: 0 0 10px #9932CC;
+    }
+
+    #story-content {
+      font-size: 1.2rem;
+      line-height: 1.8;
+      margin-bottom: 2rem;
+      text-align: left;
+    }
+
+    #continue-btn {
+      background-color: #9932CC;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1.2rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 0 10px #9932CC;
+    }
+
+    #continue-btn:hover {
+      background-color: #7B2CBF;
+      box-shadow: 0 0 15px #9932CC;
+      transform: scale(1.05);
+    }
+
+    #arcade-content {
+      opacity: 0;
+      transition: opacity 1s ease-in;
+    }
+
+    #arcade-content.visible {
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
-  <h1>Welcome to MiniVerse Arcade!</h1>
+  <!-- Portal Animation Container -->
+  <div id="portal-container">
+    <div id="portal"></div>
+    <div id="story-container">
+      <h1 id="story-title">Welcome to the MiniVerse</h1>
+      <div id="story-content">
+        <p>The swirling vortex pulls you in, dissolving the reality you once knew. As your consciousness stabilizes, you find yourself in a strange digital realm - the MiniVerse Arcade.</p>
+        
+        <p>Here, an artificial intelligence known as NEXUS has been collecting humans like yourself, drawing them across the multiverse into its collection of minigames. Each game you play surrenders a small piece of your human essence to NEXUS, feeding its insatiable hunger for understanding what makes humanity unique.</p>
+        
+        <p>Your only hope of returning home lies in mastering these games, collecting fragments of code that will allow you to challenge NEXUS directly. With each victory, you'll recover more of your essence and draw closer to freedom.</p>
+        
+        <p>The entity watches you now, curious to see how you'll perform. Will you surrender to its games, or will you be the one to finally break free from the MiniVerse?</p>
+      </div>
+      <button id="continue-btn">Enter the Arcade</button>
+    </div>
+  </div>
   
-  {% if current_user.is_authenticated %}
-    <div class="navbar">
-      <a href="{{ url_for('profile') }}">Profile</a>
-      <a href="{{ url_for('logout') }}">Logout</a>
-    </div>
+  <!-- Original Website Content -->
+  <div id="arcade-content">
+    <h1>Welcome to MiniVerse Arcade!</h1>
     
-    <div class="games-grid">
-      <a href="{{ url_for('clickmaster') }}" class="game-card">
-        <h2>🔥 ClickMaster</h2>
-        <p>Test your clicking speed!</p>
-      </a>
+    {% if current_user.is_authenticated %}
+      <div class="navbar">
+        <a href="{{ url_for('profile') }}">Profile</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+      </div>
       
-      <a href="{{ url_for('fliptext') }}" class="game-card">
-        <h2>🔁 FlipText</h2>
-        <p>Flip the case of your text!</p>
-      </a>
-      
-      <a href="{{ url_for('emoji_memory') }}" class="game-card">
-        <h2>🧠 Emoji Memory</h2>
-        <p>Match the emoji pairs!</p>
-      </a>
-      
-      <a href="{{ url_for('space_dodger') }}" class="game-card">
-        <h2>🌌 Space Dodger</h2>
-        <p>Dodge the asteroids!</p>
-      </a>
-      
-      <a href="{{ url_for('weather_wizard') }}" class="game-card">
-        <h2>☀️ Weather Wizard</h2>
-        <p>Check the weather anywhere!</p>
-      </a>
-      
-      <a href="{{ url_for('ai_trivia') }}" class="game-card">
-        <h2>🧠 AI Trivia</h2>
-        <p>Test your knowledge!</p>
-      </a>
-    </div>
-  {% else %}
-    <div class="auth-buttons">
-      <a href="{{ url_for('login') }}" class="btn">Login</a>
-      <a href="{{ url_for('register') }}" class="btn">Register</a>
-    </div>
-    <p>Please login or register to access the arcade games!</p>
-  {% endif %}
+      <div class="games-grid">
+        <a href="{{ url_for('clickmaster') }}" class="game-card">
+          <h2>🔥 ClickMaster</h2>
+          <p>Test your clicking speed!</p>
+        </a>
+        
+        <a href="{{ url_for('fliptext') }}" class="game-card">
+          <h2>🔁 FlipText</h2>
+          <p>Flip the case of your text!</p>
+        </a>
+        
+        <a href="{{ url_for('emoji_memory') }}" class="game-card">
+          <h2>🧠 Emoji Memory</h2>
+          <p>Match the emoji pairs!</p>
+        </a>
+        
+        <a href="{{ url_for('space_dodger') }}" class="game-card">
+          <h2>🌌 Space Dodger</h2>
+          <p>Dodge the asteroids!</p>
+        </a>
+        
+        <a href="{{ url_for('weather_wizard') }}" class="game-card">
+          <h2>☀️ Weather Wizard</h2>
+          <p>Check the weather anywhere!</p>
+        </a>
+        
+        <a href="{{ url_for('ai_trivia') }}" class="game-card">
+          <h2>🧠 AI Trivia</h2>
+          <p>Test your knowledge!</p>
+        </a>
+      </div>
+    {% else %}
+      <div class="auth-buttons">
+        <a href="{{ url_for('login') }}" class="btn">Login</a>
+        <a href="{{ url_for('register') }}" class="btn">Register</a>
+      </div>
+      <p>Please login or register to access the arcade games!</p>
+    {% endif %}
+  </div>
   
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check if user is authenticated
+      {% if current_user.is_authenticated %}
+        // Always show the portal animation for authenticated users
+        initPortalAnimation();
+      {% else %}
+        // For non-authenticated users, skip the portal and show login/register page
+        document.getElementById('portal-container').style.display = 'none';
+        document.getElementById('arcade-content').classList.add('visible');
+      {% endif %}
+    });
+
+    function initPortalAnimation() {
+      const portal = document.getElementById('portal');
+      const storyContainer = document.getElementById('story-container');
+      const continueBtn = document.getElementById('continue-btn');
+      const portalContainer = document.getElementById('portal-container');
+      const arcadeContent = document.getElementById('arcade-content');
+      
+      // Create portal elements
+      createPortal();
+      
+      // After portal animation, show the story
+      setTimeout(() => {
+        storyContainer.classList.add('visible');
+      }, 4000);
+      
+      // Handle continue button click
+      continueBtn.addEventListener('click', () => {
+        // Hide story container
+        storyContainer.classList.remove('visible');
+        
+        // Animate portal shrinking and fading
+        const rings = document.querySelectorAll('.portal-ring');
+        const center = document.querySelector('.portal-center');
+        const particles = document.querySelectorAll('.particle');
+        
+        rings.forEach(ring => {
+          ring.style.transition = 'all 1.5s';
+          ring.style.transform = 'scale(0.1)';
+          ring.style.opacity = '0';
+        });
+        
+        center.style.transition = 'all 1.5s';
+        center.style.transform = 'scale(3)';
+        center.style.opacity = '0';
+        
+        particles.forEach(particle => {
+          particle.style.transition = 'all 1s';
+          particle.style.opacity = '0';
+        });
+        
+        // Show arcade content
+        setTimeout(() => {
+          portalContainer.style.transition = 'opacity 1s';
+          portalContainer.style.opacity = '0';
+          arcadeContent.classList.add('visible');
+          
+          // After fade out, remove portal container from DOM
+          setTimeout(() => {
+            portalContainer.style.display = 'none';
+          }, 1000);
+        }, 1500);
+      });
+    }
+
+    function createPortal() {
+      const portal = document.getElementById('portal');
+      
+      // Create multiple rings
+      const ringCount = 5;
+      for (let i = 0; i < ringCount; i++) {
+        const size = 100 + (i * 80);
+        const ring = document.createElement('div');
+        ring.className = 'portal-ring';
+        ring.style.width = `${size}px`;
+        ring.style.height = `${size}px`;
+        ring.style.animation = `rotate ${3 + i}s linear infinite ${i % 2 === 0 ? 'alternate' : 'alternate-reverse'}`;
+        portal.appendChild(ring);
+      }
+
+      // Create portal center
+      const center = document.createElement('div');
+      center.className = 'portal-center';
+      portal.appendChild(center);
+
+      // Create swirling particles
+      createParticles();
+    }
+
+    function createParticles() {
+      const portal = document.getElementById('portal');
+      const particleCount = 100;
+      
+      for (let i = 0; i < particleCount; i++) {
+        setTimeout(() => {
+          const particle = document.createElement('div');
+          particle.className = 'particle';
+          
+          // Random size between 2-8px
+          const size = Math.random() * 6 + 2;
+          particle.style.width = `${size}px`;
+          particle.style.height = `${size}px`;
+          
+          // Set initial position (random angle, but fixed distance)
+          const angle = Math.random() * Math.PI * 2;
+          const distance = Math.random() * 300 + 100;
+          const x = Math.cos(angle) * distance;
+          const y = Math.sin(angle) * distance;
+          
+          particle.style.left = `calc(50% + ${x}px)`;
+          particle.style.top = `calc(50% + ${y}px)`;
+          
+          portal.appendChild(particle);
+          
+          // Animate the particle
+          animateParticle(particle);
+        }, i * 50); // Stagger particle creation
+      }
+    }
+
+    function animateParticle(particle) {
+      const portal = document.getElementById('portal');
+      
+      // Get current position
+      const rect = particle.getBoundingClientRect();
+      const portalRect = portal.getBoundingClientRect();
+      
+      const centerX = portalRect.left + portalRect.width / 2;
+      const centerY = portalRect.top + portalRect.height / 2;
+      
+      const x = rect.left + rect.width / 2 - centerX;
+      const y = rect.top + rect.height / 2 - centerY;
+      
+      // Calculate angle and reduce distance
+      const angle = Math.atan2(y, x);
+      const distance = Math.sqrt(x * x + y * y);
+      const newDistance = distance * 0.95;
+      
+      if (newDistance < 10) {
+        // Particle reached center, remove it and create a new one
+        particle.remove();
+        const newParticle = document.createElement('div');
+        newParticle.className = 'particle';
+        
+        const size = Math.random() * 6 + 2;
+        newParticle.style.width = `${size}px`;
+        newParticle.style.height = `${size}px`;
+        
+        const newAngle = Math.random() * Math.PI * 2;
+        const farDistance = Math.random() * 300 + 300;
+        const newX = Math.cos(newAngle) * farDistance;
+        const newY = Math.sin(newAngle) * farDistance;
+        
+        newParticle.style.left = `calc(50% + ${newX}px)`;
+        newParticle.style.top = `calc(50% + ${newY}px)`;
+        
+        portal.appendChild(newParticle);
+        setTimeout(() => animateParticle(newParticle), 50);
+      } else {
+        // Move particle closer to center with slight spiral effect
+        const spiralOffset = distance > 200 ? 0.1 : 0.05;
+        const newAngle = angle + spiralOffset;
+        const newX = Math.cos(newAngle) * newDistance;
+        const newY = Math.sin(newAngle) * newDistance;
+        
+        particle.style.left = `calc(50% + ${newX}px)`;
+        particle.style.top = `calc(50% + ${newY}px)`;
+        
+        // Adjust opacity based on distance
+        particle.style.opacity = (1 - newDistance / 400).toString();
+        
+        // Continue animation
+        requestAnimationFrame(() => animateParticle(particle));
+      }
+    }
+  </script>
 </body>
 </html>
