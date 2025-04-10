@@ -3,6 +3,7 @@
 <head>
   <title>Your Profile</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced.css') }}">
   <style>
     .profile-container {
       max-width: 800px;
@@ -69,6 +70,58 @@
       border-bottom: 2px solid #00b894;
       padding-bottom: 5px;
     }
+    
+    .transaction-history {
+      margin-top: 20px;
+    }
+    
+    .transaction-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #444;
+    }
+    
+    .transaction-amount {
+      font-weight: bold;
+    }
+    
+    .transaction-amount.positive {
+      color: #00b894;
+    }
+    
+    .transaction-amount.negative {
+      color: #FF5252;
+    }
+    
+    .transaction-source {
+      color: #ddd;
+      font-style: italic;
+    }
+    
+    .transaction-date {
+      color: #888;
+      font-size: 0.9em;
+    }
+    
+    .boss-stats {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #2d3436;
+      border-radius: 8px;
+      border: 1px solid #9932CC;
+    }
+    
+    .victory-badge {
+      display: inline-block;
+      padding: 5px 10px;
+      background-color: #9932CC;
+      color: white;
+      border-radius: 15px;
+      font-size: 0.9em;
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
@@ -93,6 +146,14 @@
           <span id="profile-coins">{{ coins }}</span>
         </div>
       </div>
+      
+      {% if victories > 0 %}
+        <div class="stat-card">
+          <h3>NEXUS Encounters</h3>
+          <p>{{ boss_attempts }} attempts</p>
+          <p>{{ victories }} victories <span class="victory-badge">MiniVerse Escapee</span></p>
+        </div>
+      {% endif %}
     </div>
     
     <h2 class="section-title">Your Best Scores</h2>
@@ -109,6 +170,27 @@
       {% endfor %}
     </table>
     
+    <h2 class="section-title">Recent Coin Transactions</h2>
+    <div class="transaction-history">
+      {% if transactions %}
+        {% for transaction in transactions %}
+          <div class="transaction-item">
+            <span class="transaction-source">
+              {{ transaction.source | replace('_', ' ') | title }}
+            </span>
+            <span class="transaction-amount {% if transaction.amount > 0 %}positive{% else %}negative{% endif %}">
+              {% if transaction.amount > 0 %}+{% endif %}{{ transaction.amount }} coins
+            </span>
+            <span class="transaction-date">
+              {{ transaction.timestamp.strftime('%Y-%m-%d %H:%M') }}
+            </span>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No recent transactions.</p>
+      {% endif %}
+    </div>
+    
     <h2 class="section-title">Discovered Clues</h2>
     <div class="clues-section">
       {% if clues %}
@@ -120,8 +202,11 @@
         {% endfor %}
       {% else %}
         <p>You haven't discovered any clues yet. Play games to find them!</p>
+        <p>Tip: Each game has a hidden clue that will help you defeat NEXUS and escape the MiniVerse.</p>
       {% endif %}
     </div>
   </div>
+  
+  <script src="{{ url_for('static', filename='js/coin_display.js') }}"></script>
 </body>
 </html>

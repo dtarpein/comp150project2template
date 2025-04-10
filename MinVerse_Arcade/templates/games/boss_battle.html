@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Final Battle - NEXUS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced.css') }}">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="{{ url_for('index') }}" class="home-btn">Home</a>
+  </nav>
+  
+  <div class="boss-battle-interface">
+    <div class="battle-header">
+      <h1>⚔️ Final Confrontation with NEXUS</h1>
+      <div class="nexus-status">
+        <div class="weakness-indicator {% if weaknesses_found >= 1 %}active{% endif %}"></div>
+        <div class="weakness-indicator {% if weaknesses_found >= 2 %}active{% endif %}"></div>
+        <div class="weakness-indicator {% if weaknesses_found >= 3 %}active{% endif %}"></div>
+      </div>
+    </div>
+    
+    <div class="nexus-container" id="nexus-container">
+      <div class="conversation-section">
+        <div class="conversation-container">
+          <div id="conversation">
+            <!-- Initial NEXUS message based on stage -->
+            {% if stage == 'intro' %}
+              <div class="message nexus-message">
+                GREETINGS, HUMAN. I AM NEXUS. YOU HAVE BEEN SELECTED FOR MY COLLECTION OF ENTERTAINMENTS. YOUR ATTEMPTS TO ESCAPE ARE... AMUSING.
+              </div>
+            {% elif stage == 'battle' %}
+              <div class="message nexus-message">
+                YOUR STRATEGIES ARE INEFFECTIVE. MY ALGORITHMS ARE PERFECT.
+              </div>
+            {% elif stage == 'weakness' %}
+              <div class="message nexus-message">
+                <span class="glitch-text">ERR-ERROR</span>... UNEXPECTED INPUT DETECTED. <span class="stutter-text">R-R</span>ecalibrating...
+              </div>
+            {% elif stage == 'escape' %}
+              <div class="message nexus-message">
+                <span class="glitch-text">SYSTEM COLLAPSE IMMINENT!</span> H-HOW? IMPOSSIBLE! YOU'VE EXPLOITED MULTIPLE VULNERABILITIES SIMULTANEOUSLY!
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="input-container">
+            <textarea id="user-input" placeholder="Type your message to NEXUS..." {% if stage == 'escape' %}disabled{% endif %}></textarea>
+            <button id="send-button" {% if stage == 'escape' %}disabled{% endif %}>Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <button id="clue-toggle">Show Clues</button>
+    <div id="clue-panel">
+      <h3>Your Discovered Clues</h3>
+      <p>Use these clues to find NEXUS's weaknesses:</p>
+      
+      {% if clues %}
+        {% for clue in clues %}
+          <div class="clue-item">
+            <div class="clue-game">{{ clue.game_name | replace('_', ' ') | title }}</div>
+            <p>{{ clue.clue_text }}</p>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>You haven't discovered any clues yet. Play games to find them!</p>
+      {% endif %}
+      
+      <div class="clue-item">
+        <div class="clue-game">Strategy Hint</div>
+        <p>Try combining concepts from multiple clues in a single message.</p>
+      </div>
+    </div>
+  </div>
+  
+  <script src="{{ url_for('static', filename='js/boss_battle.js') }}"></script>
+</body>
+</html>

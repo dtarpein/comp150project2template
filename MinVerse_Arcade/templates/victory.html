@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Escape the MiniVerse</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced.css') }}">
+</head>
+<body>
+  <div class="victory-container">
+    <div class="portal-escape"></div>
+    <div class="particles" id="particles"></div>
+    
+    <h1 class="victory-title">You've Escaped the MiniVerse!</h1>
+    
+    <div class="victory-message">
+      <p>Congratulations, {{ user.username }}! You've successfully exploited NEXUS's weaknesses and broken free from the MiniVerse. Your journey through the digital realm is complete, and you've returned to your reality.</p>
+      <p>Your strategic use of the clues you discovered was the key to defeating NEXUS. While the entity may have been defeated for now, the digital echoes of its presence suggest it may one day return...</p>
+    </div>
+    
+    <div class="victory-stats">
+      <div class="stat-card">
+        <h3>Games Played</h3>
+        <div class="stat-value">{{ games_played }}</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Coins Earned</h3>
+        <div class="stat-value">{{ coins }}</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Clues Found</h3>
+        <div class="stat-value">{{ clue_count }}</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Attempts</h3>
+        <div class="stat-value">{{ boss_attempts }}</div>
+      </div>
+    </div>
+    
+    <a href="{{ url_for('index') }}" class="return-home">Return to Arcade</a>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Play victory sound
+      playSound('victory-fanfare');
+      
+      // Create particles effect
+      createParticles();
+    });
+    
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 100;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Random size
+        const size = Math.random() * 8 + 2;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Random starting position
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        
+        // Random animation
+        const duration = Math.random() * 20 + 10;
+        const delay = Math.random() * 5;
+        
+        particle.style.animation = `float ${duration}s ${delay}s infinite linear`;
+        
+        // Apply random movement
+        setParticleAnimation(particle);
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
+    
+    function setParticleAnimation(particle) {
+      // Create keyframe animation with random movement
+      const keyframes = `
+        @keyframes float {
+          0% {
+            transform: translate(0, 0);
+            opacity: ${Math.random() * 0.5 + 0.3};
+          }
+          25% {
+            transform: translate(${Math.random() * 200 - 100}px, ${Math.random() * 200 - 100}px);
+            opacity: ${Math.random() * 0.5 + 0.5};
+          }
+          50% {
+            transform: translate(${Math.random() * 200 - 100}px, ${Math.random() * 200 - 100}px);
+            opacity: ${Math.random() * 0.5 + 0.5};
+          }
+          75% {
+            transform: translate(${Math.random() * 200 - 100}px, ${Math.random() * 200 - 100}px);
+            opacity: ${Math.random() * 0.5 + 0.3};
+          }
+          100% {
+            transform: translate(0, 0);
+            opacity: ${Math.random() * 0.5 + 0.3};
+          }
+        }
+      `;
+      
+      // Add the style
+      const style = document.createElement('style');
+      style.textContent = keyframes;
+      document.head.appendChild(style);
+    }
+    
+    function playSound(soundName) {
+      try {
+        const audio = new Audio(`/static/media/sounds/${soundName}.mp3`);
+        audio.play().catch(err => console.log('Audio playback error:', err));
+      } catch (e) {
+        console.error('Error playing sound:', e);
+      }
+    }
+  </script>
+</body>
+</html>
