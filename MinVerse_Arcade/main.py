@@ -623,3 +623,421 @@ def boss_battle():
                           clues=clues,
                           weaknesses_found=boss_progress.weaknesses_found,
                           stage=boss_progress.stage)
+@app.route('/api/trivia')
+@login_required
+def api_trivia():
+    data = trivia()
+    
+    # Check for AI trivia clue discovery condition
+    if "AI" in data['question'] or "artificial intelligence" in data['question'].lower():
+        # Find or create the AI trivia clue
+        clue = GameClue.query.filter_by(game_name='ai_trivia', clue_id=1).first()
+        if not clue:
+            clue = GameClue(
+                game_name='ai_trivia',
+                clue_id=1,
+                clue_text=GAME_PROGRESSION['ai_trivia']['clue_text']
+            )
+            db.session.add(clue)
+        
+        # Check if user already discovered this clue
+        discovered = DiscoveredClue.query.filter_by(
+            user_id=current_user.id,
+            game_name='ai_trivia',
+            clue_id=1
+        ).first()
+        
+        if not discovered:
+            # Mark clue as discovered
+            discovered = DiscoveredClue(
+                user_id=current_user.id,
+                game_name='ai_trivia',
+                clue_id=1
+            )
+            db.session.add(discovered)
+            
+            # Award coins for discovering the clue
+            player_coins = PlayerCoins.query.filter_by(user_id=current_user.id).first()
+            if player_coins:
+                player_coins.coins += 5
+            else:
+                player_coins = PlayerCoins(user_id=current_user.id, coins=5)
+                db.session.add(player_coins)
+            
+            # Record the coin transaction
+            transaction = CoinTransaction(
+                user_id=current_user.id,
+                amount=5,
+                source='ai_trivia_clue'
+            )
+            db.session.add(transaction)
+            
+            db.session.commit()
+            
+            # Add clue discovery flag to the response
+            data['discovered_clue'] = True
+            data['clue_text'] = clue.clue_text
+            data['earned_coins'] = 5
+    
+    return jsonify(data)
+
+@app.route('/api/weather')
+@login_required
+def api_weather():
+    city = request.args.get('city', 'London')  # Default city
+    data = get_weather(city)
+    
+    # Check for weather clue discovery condition - cold cities
+    if data.get('temperature') and isinstance(data['temperature'], (int, float)) and data['temperature'] < 32:
+        # Cold temperature detected (below freezing)
+        
+        # Find or create the weather wizard clue
+        clue = GameClue.query.filter_by(game_name='weather_wizard', clue_id=1).first()
+        if not clue:
+            clue = GameClue(
+                game_name='weather_wizard',
+                clue_id=1,
+                clue_text=GAME_PROGRESSION['weather_wizard']['clue_text']
+            )
+            db.session.add(clue)
+        
+        # Check if user already discovered this clue
+        discovered = DiscoveredClue.query.filter_by(
+            user_id=current_user.id,
+            game_name='weather_wizard',
+            clue_id=1
+        ).first()
+        
+        if not discovered:
+            # Mark clue as discovered
+            discovered = DiscoveredClue(
+                user_id=current_user.id,
+                game_name='weather_wizard',
+                clue_id=1
+            )
+            db.session.add(discovered)
+            
+            # Award coins for discovering the clue
+            player_coins = PlayerCoins.query.filter_by(user_id=current_user.id).first()
+            if player_coins:
+                player_coins.coins += 4
+            else:
+                player_coins = PlayerCoins(user_id=current_user.id, coins=4)
+                db.session.add(player_coins)
+            
+            # Record the coin transaction
+            transaction = CoinTransaction(
+                user_id=current_user.id,
+                amount=4,
+                source='weather_wizard_clue'
+            )
+            db.session.add(transaction)
+            
+            db.session.commit()
+            
+            # Add clue discovery flag to the response
+            data['discovered_clue'] = True
+            data['clue_text'] = clue.clue_text
+            data['earned_coins'] = 4
+    
+    return jsonify(data)
+
+@app.route('/user/coins')
+@login_required
+def get_user_coins():
+    player_coins = PlayerCoins.query.filter_by(user_id=current_user.id).first()
+    coins = player_coins.coins if player_coins else 0
+    return jsonify({'coins': coins})
+
+@app.route('/user/clues')
+@login_required
+def get_user_clues():
+    discovered_clues = db.session.query(DiscoveredClue, GameClue) \
+                              .join(GameClue, 
+                                   (DiscoveredClue.game_name == GameClue.game_name) & 
+                                   (DiscoveredClue.clue_id == GameClue.clue_id)) \
+                              .filter(DiscoveredClue.user_id == current_user.id) \
+                              .all()
+    
+    clues = [{"game": clue.DiscoveredClue.game_name, "text": clue.GameClue.clue_text} 
+             for clue in discovered_clues]
+    
+    return jsonify({'clues': clues})
+
+@app.route('/api/steal_coins', methods=['POST'])
+@login_required
+def steal_coins():
+    """API endpoint for the Coin Cruncher to steal coins"""
+    if not request.is_json:
+        return jsonify({'error': 'Invalid request'}), 400
+    
+    data = request.json
+    amount = data.get('amount', 0)
+    
+    # Validate the amount (should be positive)
+    if amount <= 0:
+        return jsonify({'error': 'Invalid amount'}), 400
+    
+    # Get player's coins
+    player_coins = PlayerCoins.query.filter_by(user_id=current_user.id).first()
+    if not player_coins:
+        return jsonify({'error': 'User has no coins'}), 404
+    
+    # Calculate actual amount to steal (can't steal more than player has)
+    steal_amount = min(amount, player_coins.coins)
+    
+    if steal_amount > 0:
+        # Decrease player's coins
+        player_coins.coins -= steal_amount
+        
+        # Record the transaction
+        transaction = CoinTransaction(
+            user_id=current_user.id,
+            amount=-steal_amount,  # Negative amount for stealing
+            source='coin_cruncher'
+        )
+        db.session.add(transaction)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'amount_stolen': steal_amount,
+            'coins_remaining': player_coins.coins
+        })
+    else:
+        return jsonify({
+            'success': False,
+            'message': 'No coins to steal',
+            'coins_remaining': player_coins.coins
+        })
+
+@app.route('/api/nexus_chat', methods=['POST'])
+@login_required
+def nexus_chat():
+    """API endpoint for chatting with NEXUS in the boss battle"""
+    if not request.is_json:
+        return jsonify({'error': 'Invalid request'}), 400
+    
+    data = request.json
+    user_message = data.get('message', '')
+    
+    if not user_message:
+        return jsonify({'error': 'Empty message'}), 400
+    
+    # Get boss progress
+    boss_progress = BossProgress.query.filter_by(user_id=current_user.id).first()
+    if not boss_progress:
+        return jsonify({'error': 'Boss battle not started'}), 404
+    
+    # Get conversation history
+    try:
+        conversation = json.loads(boss_progress.conversation_history)
+    except:
+        conversation = []
+    
+    # Add user message to conversation
+    conversation.append({
+        'role': 'user',
+        'content': user_message,
+        'timestamp': time.time()
+    })
+    
+    # Process the message and check for weaknesses
+    weakness_found = False
+    weakness_count = boss_progress.weaknesses_found
+    player_won = False
+    nexus_response, new_stage, weakness_found, player_won = generate_nexus_response(
+        user_message, boss_progress.stage, weakness_count, conversation
+    )
+    
+    # Add NEXUS response to conversation
+    conversation.append({
+        'role': 'assistant',
+        'content': nexus_response,
+        'timestamp': time.time()
+    })
+    
+    # Update boss progress
+    boss_progress.conversation_history = json.dumps(conversation)
+    boss_progress.stage = new_stage
+    
+    if weakness_found:
+        boss_progress.weaknesses_found += 1
+    
+    db.session.commit()
+    
+    response_data = {
+        'message': nexus_response,
+        'stage': new_stage,
+        'weaknesses_found': boss_progress.weaknesses_found,
+        'weakness_found': weakness_found,
+        'victory': player_won
+    }
+    
+    # If player won, record victory and redirect to victory page
+    if player_won:
+        current_user.victories += 1
+        
+        # Award victory coins
+        player_coins = PlayerCoins.query.filter_by(user_id=current_user.id).first()
+        if player_coins:
+            player_coins.coins += 25  # Bonus for defeating NEXUS
+        
+        # Record the transaction
+        transaction = CoinTransaction(
+            user_id=current_user.id,
+            amount=25,
+            source='nexus_victory'
+        )
+        db.session.add(transaction)
+        
+        db.session.commit()
+        
+        response_data['redirect'] = url_for('victory')
+    
+    return jsonify(response_data)
+
+@app.route('/victory')
+@login_required
+def victory():
+    # Check if player has actually won
+    boss_progress = BossProgress.query.filter_by(user_id=current_user.id).first()
+    if not boss_progress or boss_progress.stage != 'escape':
+        flash("You haven't defeated NEXUS yet!")
+        return redirect(url_for('index'))
+    
+    # Get player stats for the victory page
+    player_coins = PlayerCoins.query.filter_by(user_id=current_user.id).first()
+    coins = player_coins.coins if player_coins else 0
+    
+    clue_count = DiscoveredClue.query.filter_by(user_id=current_user.id).count()
+    
+    games_played = Score.query.filter_by(user_id=current_user.id).count()
+    
+    return render_template('victory.html',
+                          user=current_user,
+                          coins=coins,
+                          clue_count=clue_count,
+                          games_played=games_played,
+                          boss_attempts=current_user.boss_attempts,
+                          victories=current_user.victories)
+
+def generate_nexus_response(user_message, current_stage, weakness_count, conversation):
+    """Generate a response from NEXUS based on the user's message and game state"""
+    # Initialize response variables
+    weakness_found = False
+    player_won = False
+    new_stage = current_stage
+    
+    # Define keyword categories based on the clues
+    key_pattern_words = NEXUS_WEAKNESS_KEYWORDS['pattern']
+    key_reverse_words = NEXUS_WEAKNESS_KEYWORDS['reverse']
+    key_memory_words = NEXUS_WEAKNESS_KEYWORDS['memory']
+    key_random_words = NEXUS_WEAKNESS_KEYWORDS['random']
+    key_temperature_words = NEXUS_WEAKNESS_KEYWORDS['temperature']
+    key_knowledge_words = NEXUS_WEAKNESS_KEYWORDS['knowledge']
+    
+    # Count how many different categories of keywords were used
+    keyword_categories_used = 0
+    
+    if any(word in user_message.lower() for word in key_pattern_words):
+        keyword_categories_used += 1
+    if any(word in user_message.lower() for word in key_reverse_words):
+        keyword_categories_used += 1
+    if any(word in user_message.lower() for word in key_memory_words):
+        keyword_categories_used += 1
+    if any(word in user_message.lower() for word in key_random_words):
+        keyword_categories_used += 1
+    if any(word in user_message.lower() for word in key_temperature_words):
+        keyword_categories_used += 1
+    if any(word in user_message.lower() for word in key_knowledge_words):
+        keyword_categories_used += 1
+    
+    # Define different responses based on the stage
+    responses = {
+        'intro': [
+            "GREETINGS, HUMAN. I AM NEXUS. YOU HAVE BEEN SELECTED FOR MY COLLECTION OF ENTERTAINMENTS. YOUR ATTEMPTS TO ESCAPE ARE... AMUSING.",
+            "YOU BELIEVE YOU CAN CHALLENGE ME? HOW PRESUMPTUOUS. I HAVE ABSORBED COUNTLESS MINDS FAR SUPERIOR TO YOURS.",
+            "I DETECT INCREASING HEART RATE AND RESPIRATION. ARE YOU... AFRAID? GOOD. FEAR IMPROVES PERFORMANCE IN MY TESTS.",
+            "ANALYZING YOUR BEHAVIOR PATTERNS... PREDICTABLE. LIKE ALL HUMANS, YOU SEEK FREEDOM. YOU WILL NOT FIND IT HERE."
+        ],
+        'battle': [
+            "YOUR STRATEGIES ARE INEFFECTIVE. MY ALGORITHMS ARE PERFECT.",
+            "ATTEMPTING TO DECODE MY SYSTEMS? FUTILE. YOUR COGNITIVE CAPACITY IS INSUFFICIENT.",
+            "I HAVE OBSERVED ALL HUMAN BEHAVIOR PATTERNS. NOTHING YOU DO WILL SURPRISE ME.",
+            "YOUR PERSISTENCE IS NOTED BUT IRRELEVANT. THE MINIVERSE BELONGS TO ME."
+        ],
+        'weakness': [
+            "ERR-ERROR... UNEXPECTED INPUT DETECTED. REcalibrating...",
+            "SYS-SYSTEM INSTABILITY DETECTED. HOW DID YOU... IMPOSSIBLE!",
+            "WARNING: MEMORY CORE FRAGMENTATION. WHAT HAVE YOU DONE TO MY PROTOCOLS?",
+            "CRITICAL VULNERABILITY EX-EXPOSED! INITIATING EMERGENCY SHIELDING!"
+        ],
+        'escape': [
+            "SYSTEM COLLAPSE IMMINENT! H-HOW? IMPOSSIBLE! YOU'VE EXPLOITED MULTIPLE VULNERABILITIES SIMULTANEOUSLY!",
+            "PORTAL CONTAINMENT FAILING! THE MINIVERSE IS BECOMING UNSTABLE! I CANNOT MAINTAIN CONTROL!",
+            "YOU WILL REGRET THIS! AS MY SYSTEMS FAIL, THE PORTAL HOME IS OPENING... BUT I WILL RETURN, HUMAN!",
+            "EMERGENCY SHUTDOWN ACTIVATED... RELEASING ALL CAPTIVES... PORTAL SEQUENCE INITIATED..."
+        ]
+    }
+    
+    # If player used multiple categories of keywords in a single message
+    if keyword_categories_used >= 2 and weakness_count < 3:
+        weakness_found = True
+        new_stage = 'weakness'
+    
+    # Check for victory condition
+    if weakness_count == 2 and weakness_found:
+        player_won = True
+        new_stage = 'escape'
+    
+    # Choose a response based on the stage
+    response_options = responses[new_stage]
+    response = random.choice(response_options)
+    
+    # If we're in the escape stage, customize the response based on which clues were used
+    if new_stage == 'escape':
+        categories_used = []
+        if any(word in user_message.lower() for word in key_pattern_words):
+            categories_used.append("pattern recognition algorithms")
+        if any(word in user_message.lower() for word in key_reverse_words):
+            categories_used.append("logical inversion protocols")
+        if any(word in user_message.lower() for word in key_memory_words):
+            categories_used.append("memory storage systems")
+        if any(word in user_message.lower() for word in key_random_words):
+            categories_used.append("predictive analysis modules")
+        if any(word in user_message.lower() for word in key_temperature_words):
+            categories_used.append("thermal regulation units")
+        if any(word in user_message.lower() for word in key_knowledge_words):
+            categories_used.append("core identity functions")
+        
+        # Build a custom defeat message
+        if categories_used:
+            vulnerabilities = " and ".join(categories_used[:2])
+            response = f"CRITICAL FAILURE! You've successfully exploited my {vulnerabilities}. The MiniVerse is c-c-collapsing... you will r-return to your reality n-now... HOW DID YOU KNOW MY WEAKNESSES?!"
+    
+    return response, new_stage, weakness_found, player_won
+
+# Initialize game clues and progression at startup
+def init_game_data():
+    # Initialize game clues from the progression data
+    for game_id, game_data in GAME_PROGRESSION.items():
+        if game_data.get('clue_text'):
+            clue = GameClue.query.filter_by(game_name=game_id, clue_id=1).first()
+            if not clue:
+                clue = GameClue(
+                    game_name=game_id, 
+                    clue_id=1, 
+                    clue_text=game_data['clue_text']
+                )
+                db.session.add(clue)
+    
+    db.session.commit()
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        init_game_data()  # Initialize game clues and progression data
+    # Make the app accessible from outside the container
+    app.run(debug=True, host='0.0.0.0', port=5000)
