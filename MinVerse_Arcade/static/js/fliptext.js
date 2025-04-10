@@ -19,7 +19,9 @@ document.getElementById('flip-button').onclick = () => {
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data.message);
+      console.log("Server response:", data);  // Debug line to see server response
+      console.log("Input:", input);           // Debug line to check input
+      console.log("Output:", flipped);        // Debug line to check output
       
       // If coins were earned, show a notification
       if (data.earned_coins) {
@@ -33,6 +35,9 @@ document.getElementById('flip-button').onclick = () => {
       }
     })
     .catch(err => console.error('Error:', err));
+  } else if (input.length > 0) {
+    // Text too short but not empty
+    showNotification("Text must be at least 10 characters long to earn coins.");
   }
 };
 
@@ -157,3 +162,42 @@ function playSound(soundName) {
     console.error('Error playing sound:', e);
   }
 }
+
+// Add instructions when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  // Add instructions to the page
+  const instructionsDiv = document.createElement('div');
+  instructionsDiv.className = 'game-instructions';
+  instructionsDiv.innerHTML = `
+    <h3>Instructions:</h3>
+    <ul>
+      <li>Enter text (at least 10 characters long) in the box and click "Flip Case" to transform it</li>
+      <li>You earn 2 coins once per day for using this tool</li>
+      <li><em>Hint: Try flipping text containing "NEXUS" to discover a hidden clue!</em></li>
+    </ul>
+  `;
+  
+  // Insert after the flip button
+  const flipButton = document.getElementById('flip-button');
+  flipButton.parentNode.insertBefore(instructionsDiv, flipButton.nextSibling);
+  
+  // Add styles
+  const style = document.createElement('style');
+  style.textContent = `
+    .game-instructions {
+      background-color: rgba(153, 50, 204, 0.1);
+      border-left: 3px solid #9932CC;
+      padding: 10px 15px;
+      margin: 15px 0;
+      border-radius: 5px;
+    }
+    .game-instructions h3 {
+      color: #9932CC;
+      margin-top: 0;
+    }
+    .game-instructions ul {
+      text-align: left;
+    }
+  `;
+  document.head.appendChild(style);
+});

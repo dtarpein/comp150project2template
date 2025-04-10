@@ -628,8 +628,17 @@ def boss_battle():
 def api_trivia():
     data = trivia()
     
-    # Check for AI trivia clue discovery condition
-    if "AI" in data['question'] or "artificial intelligence" in data['question'].lower():
+    # Make it more likely to trigger the clue discovery
+    # Check for more AI-related terms and increase the likelihood
+    ai_terms = ["ai", "artificial intelligence", "machine learning", "neural", "algorithm", 
+                "computer", "data", "robot", "automation", "intelligence"]
+    
+    question_lower = data['question'].lower()
+    
+    # Check if any AI term is in the question OR random chance (10%)
+    is_ai_related = any(term in question_lower for term in ai_terms) or random.random() < 0.1
+    
+    if is_ai_related:
         # Find or create the AI trivia clue
         clue = GameClue.query.filter_by(game_name='ai_trivia', clue_id=1).first()
         if not clue:
