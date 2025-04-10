@@ -3,6 +3,7 @@
 <head>
   <title>MiniVerse Arcade</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced.css') }}">
   <style>
     /* Portal Animation Styles */
     body {
@@ -172,36 +173,67 @@
       </div>
       
       <div class="games-grid">
-        <a href="{{ url_for('clickmaster') }}" class="game-card">
-          <h2>🔥 ClickMaster</h2>
-          <p>Test your clicking speed!</p>
-        </a>
-        
-        <a href="{{ url_for('fliptext') }}" class="game-card">
-          <h2>🔁 FlipText</h2>
-          <p>Flip the case of your text!</p>
-        </a>
-        
-        <a href="{{ url_for('emoji_memory') }}" class="game-card">
-          <h2>🧠 Emoji Memory</h2>
-          <p>Match the emoji pairs!</p>
-        </a>
-        
-        <a href="{{ url_for('space_dodger') }}" class="game-card">
-          <h2>🌌 Space Dodger</h2>
-          <p>Dodge the asteroids!</p>
-        </a>
-        
-        <a href="{{ url_for('weather_wizard') }}" class="game-card">
-          <h2>☀️ Weather Wizard</h2>
-          <p>Check the weather anywhere!</p>
-        </a>
-        
-        <a href="{{ url_for('ai_trivia') }}" class="game-card">
-          <h2>🧠 AI Trivia</h2>
-          <p>Test your knowledge!</p>
-        </a>
+        {% for game_id, game_info in games.items() %}
+          <div class="game-card {% if not game_info.unlocked %}locked{% endif %}">
+            {% if game_info.unlocked %}
+              <a href="{{ url_for(game_id) }}" class="game-link">
+                <h2>{{ game_info.display_name }}</h2>
+                <p>{{ game_info.description }}</p>
+                
+                {% if game_info.high_score > 0 %}
+                  <p class="high-score">High Score: {{ game_info.high_score }}</p>
+                {% endif %}
+                
+                {% if game_info.has_clues %}
+                  <div class="clue-indicator" title="Clue discovered!">🔍</div>
+                {% endif %}
+              </a>
+            {% else %}
+              <h2>{{ game_info.display_name }}</h2>
+              <p>{{ game_info.description }}</p>
+              <div class="unlock-info">
+                Need {{ game_info.coins_required }} coins to unlock
+                <div class="progress-container">
+                  <div class="progress-bar" style="width: {{ (user_coins / game_info.coins_required) * 100 if game_info.coins_required > 0 else 100 }}%"></div>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
       </div>
+      
+      {% if boss_available %}
+        <div class="boss-battle-container">
+          <h2>⚔️ Final Battle Available!</h2>
+          <p>You've discovered enough clues to challenge NEXUS directly!</p>
+          <div class="boss-battle-status">
+            <div class="status-item">
+              <div class="status-indicator indicator-active"></div>
+              <span>{{ user_coins }} / {{ boss_coins }} Coins</span>
+            </div>
+            <div class="status-item">
+              <div class="status-indicator indicator-active"></div>
+              <span>{{ required_clues }} Clues Found</span>
+            </div>
+          </div>
+          <a href="{{ url_for('boss_battle') }}" class="btn">Challenge NEXUS</a>
+        </div>
+      {% else %}
+        <div class="boss-battle-container">
+          <h2>⚔️ Final Battle Requirements</h2>
+          <p>Collect coins and find clues to challenge NEXUS and escape the MiniVerse:</p>
+          <div class="boss-battle-status">
+            <div class="status-item">
+              <div class="status-indicator {% if user_coins >= boss_coins %}indicator-active{% else %}indicator-inactive{% endif %}"></div>
+              <span>{{ user_coins }} / {{ boss_coins }} Coins</span>
+            </div>
+            <div class="status-item">
+              <div class="status-indicator {% if required_clues <= 3 %}indicator-active{% else %}indicator-inactive{% endif %}"></div>
+              <span>{{ required_clues }} Clues Needed</span>
+            </div>
+          </div>
+        </div>
+      {% endif %}
     {% else %}
       <div class="auth-buttons">
         <a href="{{ url_for('login') }}" class="btn">Login</a>
@@ -212,6 +244,8 @@
   </div>
   
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/coin_display.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/coin_cruncher.js') }}"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // Check if user is authenticated

@@ -727,3 +727,54 @@
     border-radius: 50%;
     opacity: 0.7;
   }
+  /* Improved Game Card Text Readability */
+.game-card a {
+  color: white;
+  text-decoration: none;
+  display: block;
+  height: 100%;
+}
+
+.game-card h2 {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+  margin-bottom: 10px;
+  color: white;
+  font-size: 1.3rem;
+}
+
+.game-card p {
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+  color: #f0f0f0;
+}
+
+/* Better contrast for locked games */
+.game-card.locked h2 {
+  color: #e0e0e0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.game-card.locked p {
+  color: #cccccc;
+}
+
+.unlock-info {
+  color: #FFD700;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+  font-weight: bold;
+  padding: 8px;
+}
+
+/* Make clickmaster (unlocked game) more prominent */
+.game-card:first-child h2 {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+/* Improve high score visibility */
+.high-score {
+  background-color: rgba(0, 184, 148, 0.3);
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: inline-block;
+  margin-top: 5px;
+}
