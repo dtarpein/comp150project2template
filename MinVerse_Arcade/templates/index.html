@@ -260,58 +260,75 @@
     });
 
     function initPortalAnimation() {
-      const portal = document.getElementById('portal');
-      const storyContainer = document.getElementById('story-container');
-      const continueBtn = document.getElementById('continue-btn');
-      const portalContainer = document.getElementById('portal-container');
-      const arcadeContent = document.getElementById('arcade-content');
-      
-      // Create portal elements
-      createPortal();
-      
-      // After portal animation, show the story
-      setTimeout(() => {
-        storyContainer.classList.add('visible');
-      }, 4000);
-      
-      // Handle continue button click
-      continueBtn.addEventListener('click', () => {
-        // Hide story container
-        storyContainer.classList.remove('visible');
-        
-        // Animate portal shrinking and fading
-        const rings = document.querySelectorAll('.portal-ring');
-        const center = document.querySelector('.portal-center');
-        const particles = document.querySelectorAll('.particle');
-        
-        rings.forEach(ring => {
-          ring.style.transition = 'all 1.5s';
-          ring.style.transform = 'scale(0.1)';
-          ring.style.opacity = '0';
-        });
-        
-        center.style.transition = 'all 1.5s';
-        center.style.transform = 'scale(3)';
-        center.style.opacity = '0';
-        
-        particles.forEach(particle => {
-          particle.style.transition = 'all 1s';
-          particle.style.opacity = '0';
-        });
-        
-        // Show arcade content
-        setTimeout(() => {
-          portalContainer.style.transition = 'opacity 1s';
-          portalContainer.style.opacity = '0';
-          arcadeContent.classList.add('visible');
-          
-          // After fade out, remove portal container from DOM
-          setTimeout(() => {
-            portalContainer.style.display = 'none';
-          }, 1000);
-        }, 1500);
-      });
+  const portal = document.getElementById('portal');
+  const storyContainer = document.getElementById('story-container');
+  const continueBtn = document.getElementById('continue-btn');
+  const portalContainer = document.getElementById('portal-container');
+  const arcadeContent = document.getElementById('arcade-content');
+  
+  // Add portal sound effect
+  const portalSound = new Audio('/static/media/sounds/portal.mp3');
+  portalSound.volume = 0.7; // Set volume to 70%
+  portalSound.play().catch(err => console.log('Audio playback error:', err));
+  
+  // Create portal elements
+  createPortal();
+  
+  // After portal animation, show the story
+  setTimeout(() => {
+    storyContainer.classList.add('visible');
+  }, 4000);
+  
+  // Handle continue button click
+  continueBtn.addEventListener('click', () => {
+    // Fade out the portal sound
+    if (portalSound) {
+      const fadeAudio = setInterval(() => {
+        if (portalSound.volume > 0.1) {
+          portalSound.volume -= 0.1;
+        } else {
+          portalSound.pause();
+          clearInterval(fadeAudio);
+        }
+      }, 100);
     }
+    
+    // Hide story container
+    storyContainer.classList.remove('visible');
+    
+    // Animate portal shrinking and fading
+    const rings = document.querySelectorAll('.portal-ring');
+    const center = document.querySelector('.portal-center');
+    const particles = document.querySelectorAll('.particle');
+    
+    rings.forEach(ring => {
+      ring.style.transition = 'all 1.5s';
+      ring.style.transform = 'scale(0.1)';
+      ring.style.opacity = '0';
+    });
+    
+    center.style.transition = 'all 1.5s';
+    center.style.transform = 'scale(3)';
+    center.style.opacity = '0';
+    
+    particles.forEach(particle => {
+      particle.style.transition = 'all 1s';
+      particle.style.opacity = '0';
+    });
+    
+    // Show arcade content
+    setTimeout(() => {
+      portalContainer.style.transition = 'opacity 1s';
+      portalContainer.style.opacity = '0';
+      arcadeContent.classList.add('visible');
+      
+      // After fade out, remove portal container from DOM
+      setTimeout(() => {
+        portalContainer.style.display = 'none';
+      }, 1000);
+    }, 1500);
+  });
+}
 
     function createPortal() {
       const portal = document.getElementById('portal');
