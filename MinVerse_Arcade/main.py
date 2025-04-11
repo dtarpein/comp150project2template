@@ -1130,15 +1130,12 @@ def debug_user_data():
 # At the beginning of your if __name__ == '__main__' block
 if __name__ == '__main__':
     with app.app_context():
-        # Drop all tables and recreate them
-        db.drop_all()
+        # Create tables if they don't exist
         db.create_all()
-        
-        # Initialize game data
         init_game_data()
         
-        # Create a test admin user
-        if not User.query.filter_by(username='admin').first():
+        # Only create admin user if no users exist yet
+        if User.query.count() == 0:
             admin_user = User(
                 username='admin',
                 password=generate_password_hash('password123')
