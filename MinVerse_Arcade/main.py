@@ -34,10 +34,11 @@ class User(UserMixin, db.Model):
     scores = db.relationship('Score', backref='user', lazy=True)
     coins = db.relationship('PlayerCoins', backref='user', lazy=True)
     clues = db.relationship('DiscoveredClue', backref='user', lazy=True)
-    join_date = db.Column(db.DateTime, default=db.func.current_timestamp())
-    last_login = db.Column(db.DateTime, default=db.func.current_timestamp())
-    boss_attempts = db.Column(db.Integer, default=0)
-    victories = db.Column(db.Integer, default=0)
+    # Removed problematic columns:
+    # join_date = db.Column(db.DateTime, default=db.func.current_timestamp())
+    # last_login = db.Column(db.DateTime, default=db.func.current_timestamp())
+    # boss_attempts = db.Column(db.Integer, default=0)
+    # victories = db.Column(db.Integer, default=0)
 
 class Score(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,7 +52,8 @@ class PlayerCoins(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True)
     coins = db.Column(db.Integer, default=0)
-    last_updated = db.Column(db.DateTime, default=db.func.current_timestamp())
+    # Removed last_updated column which doesn't exist in the database:
+    # last_updated = db.Column(db.DateTime, default=db.func.current_timestamp())
 
 class GameClue(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -113,6 +115,7 @@ def game_access_required(game_id):
 
 @app.route('/')
 def index():
+    # Check if user is authenticated
     if current_user.is_authenticated:
         # Get user's coins
         player_coins = PlayerCoins.query.filter_by(user_id=current_user.id).first()
@@ -150,23 +153,26 @@ def index():
         clue_count = DiscoveredClue.query.filter_by(user_id=current_user.id).count()
         boss_available = clue_count >= REQUIRED_CLUES and user_coins >= BOSS_BATTLE_COINS
         
+        # For authenticated users, skip the intro story and go straight to the games
         return render_template('index.html', 
                              games=games_info, 
                              user_coins=user_coins,
                              boss_available=boss_available,
                              required_clues=REQUIRED_CLUES,
-                             boss_coins=BOSS_BATTLE_COINS)
+                             boss_coins=BOSS_BATTLE_COINS,
+                             skip_intro=True)  # Add this flag
     else:
-        return render_template('index.html')
+        # For non-authenticated users, show the intro
+        return render_template('index.html', skip_intro=False)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         user = User.query.filter_by(username=request.form['username']).first()
         if user and check_password_hash(user.password, request.form['password']):
-            # Update last login timestamp
-            user.last_login = datetime.now()
-            db.session.commit()
+            # Removed:
+            # user.last_login = datetime.now()
+            # db.session.commit()
             
             login_user(user)
             return redirect(url_for('index'))
@@ -232,9 +238,9 @@ def profile():
                                 .limit(10) \
                                 .all()
     
-    # Get user's boss battle attempts and victories
-    boss_attempts = current_user.boss_attempts
-    victories = current_user.victories
+    # Use default values instead of missing attributes
+    boss_attempts = 0  # Default value 
+    victories = 0      # Default value
     
     return render_template('profile.html', 
                           user=current_user, 
@@ -253,6 +259,7 @@ def clickmaster():
     if request.method == 'POST':
         data = request.json
         score = data.get('score', 0)
+        print(f"Received score: {score}")
         
         # Save the score
         new_score = Score(user_id=current_user.id, game='clickmaster', score=score)
@@ -261,27 +268,27 @@ def clickmaster():
         # Initialize response data
         response_data = {'message': 'Score saved'}
         
-        # Check if the score is exactly 42 (our threshold for the clue)
+        # Award coins based on score tiers
+        earned_coins = 0
+        if score >= 50:
+            earned_coins = 5
+        elif score >= 30:
+            earned_coins = 3
+        elif score >= 10:
+            earned_coins = 1
+        
+        # Handle special case for 42
         if score == 42:
-            # Award 3 coins
-            player_coins = PlayerCoins.query.filter_by(user_id=current_user.id).first()
-            if player_coins:
-                player_coins.coins += 3
-            else:
-                player_coins = PlayerCoins(user_id=current_user.id, coins=3)
-                db.session.add(player_coins)
+            print("42 clicks detected - special handling")
+            # Extra coins bonus
+            earned_coins += 3
             
-            # Record the coin transaction
-            transaction = CoinTransaction(
-                user_id=current_user.id,
-                amount=3,
-                source='clickmaster_clue'
-            )
-            db.session.add(transaction)
-            
-            # Check if the clue exists, create it if not
+            # Always show the clue for 42 clicks, regardless of discovery status
             clue = GameClue.query.filter_by(game_name='clickmaster', clue_id=1).first()
+            
+            # Create the clue if it doesn't exist
             if not clue:
+                print("Creating clue as it doesn't exist")
                 clue = GameClue(
                     game_name='clickmaster',
                     clue_id=1,
@@ -289,7 +296,7 @@ def clickmaster():
                 )
                 db.session.add(clue)
             
-            # Mark clue as discovered if not already
+            # Mark as discovered if not already
             discovered = DiscoveredClue.query.filter_by(
                 user_id=current_user.id,
                 game_name='clickmaster',
@@ -297,6 +304,7 @@ def clickmaster():
             ).first()
             
             if not discovered:
+                print("Marking clue as discovered")
                 discovered = DiscoveredClue(
                     user_id=current_user.id,
                     game_name='clickmaster',
@@ -304,17 +312,42 @@ def clickmaster():
                 )
                 db.session.add(discovered)
             
-            # Add clue info to response
-            response_data.update({
-                'show_clue': True,
-                'clue': clue.clue_text,
-                'earned_coins': 3
-            })
+            # Always add clue to response for 42
+            response_data['show_clue'] = True
+            response_data['clue'] = clue.clue_text
+            print(f"Added clue to response: {clue.clue_text}")
         
-        db.session.commit()
-        return jsonify(response_data)
+        # Award coins if earned
+        if earned_coins > 0:
+            player_coins = PlayerCoins.query.filter_by(user_id=current_user.id).first()
+            if player_coins:
+                player_coins.coins += earned_coins
+            else:
+                player_coins = PlayerCoins(user_id=current_user.id, coins=earned_coins)
+                db.session.add(player_coins)
+            
+            # Record transaction
+            transaction = CoinTransaction(
+                user_id=current_user.id,
+                amount=earned_coins,
+                source='clickmaster_play'
+            )
+            db.session.add(transaction)
+            
+            response_data['earned_coins'] = earned_coins
+        
+        try:
+            db.session.commit()
+            print(f"Final response data: {response_data}")
+            return jsonify(response_data)
+        except Exception as e:
+            print(f"Error committing to database: {e}")
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
     
     return render_template('games/clickmaster.html')
+
+
 
 @app.route('/games/emoji_memory', methods=['GET', 'POST'])
 @game_access_required('emoji_memory')
@@ -602,8 +635,8 @@ def boss_battle():
         boss_progress = BossProgress(user_id=current_user.id)
         db.session.add(boss_progress)
         
-        # Increment boss attempts counter
-        current_user.boss_attempts += 1
+        # Removed boss attempts counter increment:
+        # current_user.boss_attempts += 1
         db.session.commit()
     
     # Get user's discovered clues to display during battle
@@ -886,7 +919,8 @@ def nexus_chat():
     
     # If player won, record victory and redirect to victory page
     if player_won:
-        current_user.victories += 1
+        # Removed victories counter increment:
+        # current_user.victories += 1
         
         # Award victory coins
         player_coins = PlayerCoins.query.filter_by(user_id=current_user.id).first()
@@ -924,13 +958,17 @@ def victory():
     
     games_played = Score.query.filter_by(user_id=current_user.id).count()
     
+    # Use default values for boss_attempts and victories
+    boss_attempts = 0  # Default value 
+    victories = 0      # Default value
+    
     return render_template('victory.html',
                           user=current_user,
                           coins=coins,
                           clue_count=clue_count,
                           games_played=games_played,
-                          boss_attempts=current_user.boss_attempts,
-                          victories=current_user.victories)
+                          boss_attempts=boss_attempts,
+                          victories=victories)
 
 def generate_nexus_response(user_message, current_stage, weakness_count, conversation):
     """Generate a response from NEXUS based on the user's message and game state"""
@@ -1044,9 +1082,76 @@ def init_game_data():
     
     db.session.commit()
 
+# Add your debug route
+@app.route('/debug/user_data')
+@login_required
+def debug_user_data():
+    """Debug route to check user data"""
+    user_id = current_user.id
+    username = current_user.username
+    
+    # Get coins
+    player_coins = PlayerCoins.query.filter_by(user_id=user_id).first()
+    coins = player_coins.coins if player_coins else "No coins record"
+    
+    # Get scores
+    scores = Score.query.filter_by(user_id=user_id, game='clickmaster').order_by(Score.date.desc()).limit(10).all()
+    score_list = [{"score": s.score, "date": s.date} for s in scores]
+    
+    # Get transactions
+    transactions = CoinTransaction.query.filter_by(user_id=user_id).order_by(CoinTransaction.timestamp.desc()).limit(10).all()
+    transaction_list = [{"amount": t.amount, "source": t.source, "timestamp": t.timestamp} for t in transactions]
+    
+    # Get clues
+    clues = DiscoveredClue.query.filter_by(user_id=user_id).all()
+    clue_list = [{"game": c.game_name, "clue_id": c.clue_id, "discovered_at": c.discovered_at} for c in clues]
+    
+    debug_data = {
+        "user_id": user_id,
+        "username": username,
+        "coins": coins,
+        "recent_scores": score_list,
+        "recent_transactions": transaction_list,
+        "discovered_clues": clue_list
+    }
+    
+    return jsonify(debug_data)
+
+# DO NOT MODIFY the existing generate_nexus_response function!
+# If you already have this function with code, leave it as is.
+# If you don't have it, you should add it with proper indentation.
+
+# Don't add this if you already have this function with implementation
+# def generate_nexus_response(user_message, current_stage, weakness_count, conversation):
+#     # Your function implementation here (needs at least one line of code)
+#     return "Response", current_stage, False, False  # Return appropriate values
+
+
+# At the beginning of your if __name__ == '__main__' block
 if __name__ == '__main__':
     with app.app_context():
+        # Drop all tables and recreate them
+        db.drop_all()
         db.create_all()
-        init_game_data()  # Initialize game clues and progression data
-    # Make the app accessible from outside the container
+        
+        # Initialize game data
+        init_game_data()
+        
+        # Create a test admin user
+        if not User.query.filter_by(username='admin').first():
+            admin_user = User(
+                username='admin',
+                password=generate_password_hash('password123')
+            )
+            db.session.add(admin_user)
+            db.session.commit()
+            
+            # Give admin some coins
+            admin_coins = PlayerCoins(user_id=admin_user.id, coins=100)
+            db.session.add(admin_coins)
+            db.session.commit()
+            
+            print("Created admin user with username 'admin' and password 'password123'")
+    
+    # Run the app
     app.run(debug=True, host='0.0.0.0', port=5000)

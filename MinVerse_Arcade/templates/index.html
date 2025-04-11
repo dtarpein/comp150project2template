@@ -248,14 +248,14 @@
   <script src="{{ url_for('static', filename='js/coin_cruncher.js') }}"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Check if user is authenticated
-      {% if current_user.is_authenticated %}
-        // Always show the portal animation for authenticated users
-        initPortalAnimation();
-      {% else %}
-        // For non-authenticated users, skip the portal and show login/register page
+      // Check if we should skip the intro
+      {% if skip_intro %}
+        // Skip the portal for authenticated users
         document.getElementById('portal-container').style.display = 'none';
         document.getElementById('arcade-content').classList.add('visible');
+      {% else %}
+        // Show portal animation for new or non-authenticated users
+        initPortalAnimation();
       {% endif %}
     });
 

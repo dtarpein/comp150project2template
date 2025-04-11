@@ -7,12 +7,27 @@ const clueText = document.getElementById('clue-text');
 const clueCloseBtn = document.getElementById('clue-close-btn');
 const earnedCoinsSpan = document.getElementById('earned-coins');
 
-// Load the user's current coins when the page loads
+// Load user's coins when page loads
 window.addEventListener('DOMContentLoaded', () => {
   fetchUserCoins();
+  
+  // Add a submit button 
+  const submitButton = document.createElement('button');
+  submitButton.innerText = 'Submit Score';
+  submitButton.style.margin = '15px auto';
+  submitButton.style.display = 'block';
+  submitButton.style.padding = '10px 20px';
+  
+  // Add the button after the click counter
+  document.querySelector('p').after(submitButton);
+  
+  // Add click handler for submit button
+  submitButton.addEventListener('click', () => {
+    sendScore(clicks);
+  });
 });
 
-// Fetch the user's current coins from the server
+// Fetch the user's current coins
 function fetchUserCoins() {
   fetch('/user/coins')
     .then(res => res.json())
@@ -23,22 +38,27 @@ function fetchUserCoins() {
 }
 
 // Handle clicks on the button
-clickBtn.onclick = () => {
+clickBtn.addEventListener('click', () => {
   clicks++;
   clickCount.innerText = clicks;
   
-  // Play sound with error handling
-  const audio = new Audio('/static/media/sounds/click.mp3');
-  audio.play().catch(err => console.log('Audio playback error:', err));
+  // Play sound if available
+  try {
+    const audio = new Audio('/static/media/sounds/click.mp3');
+    audio.play().catch(err => {});
+  } catch (err) {}
 
-  // Send score to backend
-  if (clicks % 10 === 0 || clicks === 42) {
+  // Check if we hit exactly 42 clicks
+  if (clicks === 42) {
+    console.log("Hit 42 clicks, sending score...");
     sendScore(clicks);
   }
-};
+});
 
-// Send the current score to the server
+// Send the score to the server
 function sendScore(score) {
+  console.log('Sending score:', score);
+  
   fetch('/games/clickmaster', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -46,34 +66,39 @@ function sendScore(score) {
   })
   .then(res => res.json())
   .then(data => {
-    console.log(data.message);
+    console.log('Server response:', data);
     
-    // If the user has earned coins, update the display
-    if (data.earned_coins > 0) {
-      // Refresh coin count from server to ensure accuracy
+    // Update coins if earned
+    if (data.earned_coins) {
+      console.log('Earned coins:', data.earned_coins);
       fetchUserCoins();
-      
-      // Show earned coins in the modal
       earnedCoinsSpan.innerText = data.earned_coins;
     }
     
-    // If the user has discovered a clue, show it
+    // Show clue if discovered
     if (data.show_clue) {
+      console.log('Clue discovered! Text:', data.clue);
       clueText.innerText = data.clue;
       clueModal.style.display = 'flex';
+    } else {
+      console.log('No clue in response');
     }
   })
   .catch(err => console.error('Error saving score:', err));
 }
 
 // Close the clue modal when the button is clicked
-clueCloseBtn.addEventListener('click', () => {
-  clueModal.style.display = 'none';
-});
+if (clueCloseBtn) {
+  clueCloseBtn.addEventListener('click', () => {
+    clueModal.style.display = 'none';
+  });
+}
 
 // Also close the modal if the user clicks outside of it
-clueModal.addEventListener('click', (event) => {
-  if (event.target === clueModal) {
-    clueModal.style.display = 'none';
-  }
-});
+if (clueModal) {
+  clueModal.addEventListener('click', (event) => {
+    if (event.target === clueModal) {
+      clueModal.style.display = 'none';
+    }
+  });
+}

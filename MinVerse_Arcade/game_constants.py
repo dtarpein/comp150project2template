@@ -22,28 +22,28 @@ GAME_PROGRESSION = {
         'clue_text': "NEXUS has a weak memory for faces. Show it the same pattern twice to confuse it."
     },
     'space_dodger': {
-        'coins_required': 35,  # Unlock after earning 35 coins
+        'coins_required': 30,  # Unlock after earning 30 coins
         'order': 4,
         'display_name': '🌌 Space Dodger',
         'description': 'Dodge the asteroids!',
         'clue_text': "NEXUS cannot predict random movements. Chaos is your ally."
     },
     'weather_wizard': {
-        'coins_required': 50,  # Unlock after earning 50 coins
+        'coins_required': 40,  # Unlock after earning 40 coins
         'order': 5,
         'display_name': '☀️ Weather Wizard',
         'description': 'Check the weather anywhere!',
         'clue_text': "NEXUS overheats easily. Cold climates weaken its defenses."
     },
     'ai_trivia': {
-        'coins_required': 75,  # Unlock after earning 75 coins
+        'coins_required': 50,  # Unlock after earning 50 coins
         'order': 6,
         'display_name': '🧠 AI Trivia',
         'description': 'Test your knowledge!',
         'clue_text': "Knowledge is power. NEXUS has a blind spot about its own creation."
     },
     'boss_battle': {
-        'coins_required': 100,  # Final boss requires 100 coins
+        'coins_required': 60,  # Final boss requires 60 coins
         'order': 7,
         'display_name': '⚔️ Final Battle',
         'description': 'Confront NEXUS and escape!',
@@ -52,7 +52,7 @@ GAME_PROGRESSION = {
 }
 
 # Coins required to unlock boss battle
-BOSS_BATTLE_COINS = 100
+BOSS_BATTLE_COINS = 60
 
 # Number of clues required to attempt the boss battle
 REQUIRED_CLUES = 3
