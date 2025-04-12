@@ -47,18 +47,25 @@ But beware - the mischievous Coin Cruncher may appear at any time to steal your 
 
 ## Setup Instructions
 1. Clone the repository
-2. Create a .env file with the following variables:
+2. pip install requirements:
+    pip install flask
+    pip install openai
+    pip install flask_sqlalchemy
+    pip install flask_login
+    pip install dotenv
+    
+3. Create a .env file with the following variables:
 ```
 SECRET_KEY=your_random_secret_key_here
 OPENAI_API_KEY=your_openai_api_key
 WEATHER_API_KEY=your_openweathermap_api_key
 ```
-3. Install dependencies using Poetry:
+4. Install dependencies using Poetry:
 ```bash
 poetry install
 ```
 
-4. Initialize the database:
+5. Initialize the database:
 ```bash
 poetry run python
 >>> from main import app, db
@@ -67,12 +74,12 @@ poetry run python
 >>> exit()
 ```
 
-5. Run the application:
+6. Run the application:
 ```bash
 poetry run python main.py
 ```
 
-6. Open a browser and navigate to http://localhost:5000
+7. Open a browser and navigate to http://localhost:5000
 
 ## Gameplay Hints
 
