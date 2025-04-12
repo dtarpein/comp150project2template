@@ -53,7 +53,8 @@ But beware - the mischievous Coin Cruncher may appear at any time to steal your 
     pip install flask_sqlalchemy
     pip install flask_login
     pip install dotenv
-    
+    pip install requests
+
 3. Create a .env file with the following variables:
 ```
 SECRET_KEY=your_random_secret_key_here
